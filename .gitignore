@@ -235,3 +235,4 @@ fabric.properties
 scratch*
 *.csv
 .full_url
+.idea
