@@ -6,6 +6,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
+# Backblaze
 S3_ENDPOINT = 'https://s3.us-east-005.backblazeb2.com'
 S3_KEY_ID = '0052c21d8a679860000000002'
 S3_APPLICATION_KEY = 'K005ua3fyQ4r3w9hShggBakdzjwD0NA'
