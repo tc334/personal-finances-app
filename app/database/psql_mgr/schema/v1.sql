@@ -1,11 +1,13 @@
 create type access_levels as enum('ADMIN', 'USER');
-create type storage_status as enum('AVAILABLE', 'DELETED', 'NEVER EXISTED');
+create type storage_status as enum('AVAILABLE', 'DELETED', 'NEVER_EXISTED');
 create type account_type as enum('ASSET_LONGTERM', 'ASSET_SHORTTERM', 'ASSET_PREPAY', 'EXPENSE_OPERATING', 'INCOME', 'EQUITY', 'LIABILITY', 'RETAINED_EARNINGS', 'INCOME_SUMMARY');
 create type account_permanence as enum('PERMANENT', 'TEMPORARY');
 create type account_actions as enum('DEBIT', 'CREDIT');
 
 create table person (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hashed_password CHAR(88) NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT FALSE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -39,7 +41,7 @@ create table journal(
    created_by UUID REFERENCES person(id),
    entity_id UUID REFERENCES entity(id),
    description TEXT NOT NULL,
-   receipt_status storage_status NOT NULL DEFAULT 'NEVER EXISTED'
+   receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED'
  );
 
 create table ledger(

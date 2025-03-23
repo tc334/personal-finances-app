@@ -5,7 +5,7 @@ from functools import lru_cache
 from psycopg.conninfo import make_conninfo
 from psycopg_pool import AsyncConnectionPool
 
-from app.database.utils.env_mgr import get_env
+from app.utils.env_mgr import get_env
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 import logging
 
-from app.database.utils.env_mgr import get_env
+from app.utils.env_mgr import get_env
 from app.utils.log_helper import log_setup
 from app.database.psql_mgr.psql_mgr import start_async_pool, stop_async_pool
 
