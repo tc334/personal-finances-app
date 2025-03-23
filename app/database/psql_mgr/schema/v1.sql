@@ -6,8 +6,10 @@ create type account_actions as enum('DEBIT', 'CREDIT');
 
 create table person (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  hashed_password CHAR(88) NOT NULL,
-  active BOOLEAN NOT NULL DEFAULT FALSE,
+  created_on TIMESTAMP DEFAULT localtimestamp(),
+  created_by VARCHAR(32) DEFAULT current_user(),
+  hashed_password CHAR(88),
+  active BOOLEAN DEFAULT TRUE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -15,46 +17,55 @@ create table person (
 );
 
 create table entity(
-  id UUID PRIMARY KEY,
-  name TEXT NOT NULL
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_on TIMESTAMP DEFAULT localtimestamp(),
+  created_by VARCHAR(32) DEFAULT current_user(),
+  name TEXT UNIQUE NOT NULL
 );
 
 create table person_entity_junction(
   user_id UUID REFERENCES person(id),
   entity_id UUID REFERENCES entity(id)
- );
+);
 
- create table account(
-   id UUID PRIMARY KEY,
-   entity_id UUID REFERENCES entity(id),
-   name TEXT NOT NULL,
-   parent_account_id UUID,
-   archived BOOLEAN DEFAULT 'FALSE',
-   type account_type NOT NULL,
-   permanence account_permanence NOT NULL,
-   UNIQUE(id, type)
- );
+create table account(
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
+  created_by VARCHAR(32) DEFAULT current_user(),
+  entity_id UUID REFERENCES entity(id),
+  name TEXT NOT NULL,
+  parent_account_id UUID,
+  archived BOOLEAN DEFAULT 'FALSE',
+  type account_type NOT NULL,
+  permanence account_permanence NOT NULL,
+  UNIQUE(id, type)
+);
 
 create table journal(
-   id UUID PRIMARY KEY,
-   timestamp DATE NOT NULL,
-   created_by UUID REFERENCES person(id),
-   entity_id UUID REFERENCES entity(id),
-   description TEXT NOT NULL,
-   receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED'
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
+  timestamp DATE NOT NULL,
+  created_by UUID REFERENCES person(id),
+  entity_id UUID REFERENCES entity(id),
+  description TEXT NOT NULL,
+  receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED'
  );
 
 create table ledger(
-   id UUID PRIMARY KEY,
-   journal_id UUID NOT NULL REFERENCES journal(id),
-   account_id UUID NOT NULL REFERENCES account(id),
-   amount NUMERIC(2) NOT NULL,
-   direction account_actions NOT NULL,
-   reconciled BOOLEAN NOT NULL DEFAULT 'FALSE'
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
+  created_by VARCHAR(32) DEFAULT current_user(),
+  journal_id UUID NOT NULL REFERENCES journal(id),
+  account_id UUID NOT NULL REFERENCES account(id),
+  amount NUMERIC(2) NOT NULL,
+  direction account_actions NOT NULL,
+  reconciled BOOLEAN NOT NULL DEFAULT 'FALSE'
 );
 
 create table prepaid(
-  id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
+  created_by VARCHAR(32) DEFAULT current_user(),
   amount NUMERIC(2) NOT NULL,
   receive_month DATE NOT NULL,
   processed BOOLEAN NOT NULL DEFAULT 'FALSE',

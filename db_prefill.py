@@ -1,6 +1,6 @@
 from app.database.psql_mgr.models.v1 import m_Person, m_AccessLevels
 from app.database.psql_mgr.api.insert import INSERT_API
-from app.utils.security_helpers import get_password_hash
+from app.security.auth import get_password_hash
 
 
 async def add_users():

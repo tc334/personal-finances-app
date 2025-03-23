@@ -19,6 +19,7 @@ class Env(BaseSettings):
     PSQL_URL: str
     PSQL_PORT: str
     PSQL_SCHEMA_VERSION: str
+    PASSWORD_SALT: str
 
 
 @lru_cache(maxsize=1)
