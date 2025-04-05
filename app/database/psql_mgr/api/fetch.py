@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 set_json_serdes()
 
 
+class NoRecordsFoundError(Exception):
+    pass
+
+
 def is_agg_col(potential_agg_col: str) -> bool:
     words = potential_agg_col.split(".")
     return len(words) == 3 and any(
@@ -382,7 +386,7 @@ async def _fetch(
 
         records = await cur.fetchall()
         if not records:
-            raise RuntimeError("No Record Found")
+            raise NoRecordsFoundError
         logger.debug(f"fetched rows {records}")
 
         # convert dict to model if all columns queried

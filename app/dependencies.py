@@ -10,6 +10,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    print(f"......get current user")
     credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
@@ -23,8 +24,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_current_active_user(current_user: Annotated[m_Person, Depends(get_current_user)]):
+    print("......get_current_active_user")
     if not current_user.active:
         raise HTTPException(status_code=400, detail="Inactive user")
+    print(f"Current user {current_user.first_name} passed JWT authentication.")
     return current_user
 
 

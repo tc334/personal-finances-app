@@ -22,20 +22,13 @@ class m_StorageStatus(str, Enum):
 
 
 class m_AccountType(str, Enum):
-    ASSET_LONGTERM = "ASSET_LONGTERM"
-    ASSET_SHORTTERM = "ASSET_SHORTTERM"
-    ASSET_PREPAY = "ASSET_PREPAY"
-    EXPENSE_OPERATING = "EXPENSE_OPERATING"
+    ASSET = "ASSET"
+    EXPENSE = "EXPENSE"
     INCOME = "INCOME"
     EQUITY = "EQUITY"
     LIABILITY = "LIABILITY"
-    RETAINED_EARNINGS = "RETAINED_EARNINGS"
+    DIVIDEND = "DIVIDEND"
     INCOME_SUMMARY = "INCOME_SUMMARY"
-
-
-class m_AccountPermanence(str, Enum):
-    PERMANENT = "PERMANENT"
-    TEMPORARY = "TEMPORARY"
 
 
 class m_AccountActions(str, Enum):
@@ -45,45 +38,56 @@ class m_AccountActions(str, Enum):
 
 class m_Person(BaseModel):
     id: Optional[UUID] = None
-    hashed_password: str
-    active: Optional[bool] = None
+    created_on: Optional[datetime] = None
+    created_by: Optional[str] = None
+    email: str
+    hashed_password: Optional[str] = None
     first_name: str
     last_name: str
-    email: str
     level: Optional[m_AccessLevels] = None
+    active: Optional[bool] = None
+    confirmed: Optional[bool] = None
 
 
 class m_Entity(BaseModel):
     id: Optional[UUID] = None
+    created_on: Optional[datetime] = None
+    created_by: Optional[str] = None
     name: str
 
 
 class m_PersonEntityJunction(BaseModel):
+    id: Optional[UUID] = None
     user_id: Optional[UUID] = None
     entity_id: Optional[UUID] = None
 
 
 class m_Account(BaseModel):
     id: Optional[UUID] = None
+    created_on: Optional[datetime] = None
+    created_by: Optional[str] = None
     entity_id: Optional[UUID] = None
     name: str
     parent_account_id: Optional[UUID] = None
-    archived: Optional[bool] = None
     type: m_AccountType
-    permanence: m_AccountPermanence
+    archived: Optional[bool] = None
 
 
 class m_Journal(BaseModel):
     id: Optional[UUID] = None
+    created_on: Optional[datetime] = None
     timestamp: date
     created_by: Optional[UUID] = None
     entity_id: Optional[UUID] = None
     description: str
+    closing_entry: Optional[bool] = None
     receipt_status: Optional[m_StorageStatus] = None
 
 
 class m_Ledger(BaseModel):
     id: Optional[UUID] = None
+    created_on: Optional[datetime] = None
+    created_by: Optional[str] = None
     journal_id: UUID
     account_id: UUID
     amount: float
@@ -93,6 +97,8 @@ class m_Ledger(BaseModel):
 
 class m_Prepaid(BaseModel):
     id: Optional[UUID] = None
+    created_on: Optional[datetime] = None
+    created_by: Optional[str] = None
     amount: float
     receive_month: date
     processed: Optional[bool] = None
@@ -118,21 +124,13 @@ class c_StorageStatus:
 
 @dataclass(frozen=True)
 class c_AccountType:
-    ASSET_LONGTERM = "ASSET_LONGTERM"
-    ASSET_SHORTTERM = "ASSET_SHORTTERM"
-    ASSET_PREPAY = "ASSET_PREPAY"
-    EXPENSE_OPERATING = "EXPENSE_OPERATING"
+    ASSET = "ASSET"
+    EXPENSE = "EXPENSE"
     INCOME = "INCOME"
     EQUITY = "EQUITY"
     LIABILITY = "LIABILITY"
-    RETAINED_EARNINGS = "RETAINED_EARNINGS"
+    DIVIDEND = "DIVIDEND"
     INCOME_SUMMARY = "INCOME_SUMMARY"
-
-
-@dataclass(frozen=True)
-class c_AccountPermanence:
-    PERMANENT = "PERMANENT"
-    TEMPORARY = "TEMPORARY"
 
 
 @dataclass(frozen=True)
@@ -144,22 +142,28 @@ class c_AccountActions:
 @dataclass(frozen=True)
 class c_Person:
     id = "person.id"
+    created_on = "person.created_on"
+    created_by = "person.created_by"
+    email = "person.email"
     hashed_password = "person.hashed_password"
-    active = "person.active"
     first_name = "person.first_name"
     last_name = "person.last_name"
-    email = "person.email"
     level = "person.level"
+    active = "person.active"
+    confirmed = "person.confirmed"
 
 
 @dataclass(frozen=True)
 class c_Entity:
     id = "entity.id"
+    created_on = "entity.created_on"
+    created_by = "entity.created_by"
     name = "entity.name"
 
 
 @dataclass(frozen=True)
 class c_PersonEntityJunction:
+    id = "person_entity_junction.id"
     user_id = "person_entity_junction.user_id"
     entity_id = "person_entity_junction.entity_id"
 
@@ -167,27 +171,32 @@ class c_PersonEntityJunction:
 @dataclass(frozen=True)
 class c_Account:
     id = "account.id"
+    created_on = "account.created_on"
+    created_by = "account.created_by"
     entity_id = "account.entity_id"
     name = "account.name"
     parent_account_id = "account.parent_account_id"
-    archived = "account.archived"
     type = "account.type"
-    permanence = "account.permanence"
+    archived = "account.archived"
 
 
 @dataclass(frozen=True)
 class c_Journal:
     id = "journal.id"
+    created_on = "journal.created_on"
     timestamp = "journal.timestamp"
     created_by = "journal.created_by"
     entity_id = "journal.entity_id"
     description = "journal.description"
+    closing_entry = "journal.closing_entry"
     receipt_status = "journal.receipt_status"
 
 
 @dataclass(frozen=True)
 class c_Ledger:
     id = "ledger.id"
+    created_on = "ledger.created_on"
+    created_by = "ledger.created_by"
     journal_id = "ledger.journal_id"
     account_id = "ledger.account_id"
     amount = "ledger.amount"
@@ -198,6 +207,8 @@ class c_Ledger:
 @dataclass(frozen=True)
 class c_Prepaid:
     id = "prepaid.id"
+    created_on = "prepaid.created_on"
+    created_by = "prepaid.created_by"
     amount = "prepaid.amount"
     receive_month = "prepaid.receive_month"
     processed = "prepaid.processed"

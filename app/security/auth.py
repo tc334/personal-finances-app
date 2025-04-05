@@ -10,7 +10,7 @@ from app.database.psql_mgr.models.v1 import m_Person, c_Person
 from app.database.psql_mgr.api.fetch import FETCH_API
 
 
-ACCESS_TOKEN_EXPIRE_DAYS = 0.003
+ACCESS_TOKEN_EXPIRE_DAYS = 1
 ALGORITHM = "HS256"
 
 logger = logging.getLogger(__name__)
@@ -32,16 +32,22 @@ def create_access_token(data: dict):
 
 
 async def verify_token(token: str) -> m_Person:
+    logger.debug("verify_token()")
     env = get_env()
     try:
+        logger.debug(f"Decoding JWT")
         payload_dict = jwt.decode(token, env.SECRET_KEY, algorithms=[ALGORITHM])
+        logger.debug(payload_dict)
     except jwt.ExpiredSignatureError:
+        print(f"Expired Token")
+        logger.warning(f"User rejected due to expired JWT")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Expired token signature",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.exceptions.DecodeError:
+        logger.warning(f"User rejected due to JWT decode error")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
@@ -53,16 +59,25 @@ async def verify_token(token: str) -> m_Person:
         user: m_Person = await FETCH_API.fetch_where_uuid(
             select_cols=FETCH_API.all,
             from_table=m_Person,
-            where_uuid=payload_dict["person_id"],
+            where_uuid=payload_dict["sub"],
         )
-        return user
+        print(user)
     except:
-        logger.warning("No user found matching token")
+        logger.warning(f"No user found matching token with uuid {payload_dict['sub']}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Token verification error, could not find user {payload_dict['person_id']} in the DB",
+            detail=f"Token verification error, could not find user {payload_dict['sub']} in the DB",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    if not (user.active and user.confirmed):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"User {user.first_name} {user.last_name} is not active and confirmed",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return user
 
 
 async def authenticate_user(username: str, password: str) -> m_Person | bool:
@@ -76,6 +91,10 @@ async def authenticate_user(username: str, password: str) -> m_Person | bool:
         )
     except:
         logger.warning("Authentication error trying to login. Couldn't find user in DB")
+        return False
+
+    if not (user.active and user.confirmed):
+        logger.warning(f"Authentication error trying to login. User isn't active and has confirmed email")
         return False
 
     if not verify_password(password, user.hashed_password):
@@ -110,8 +129,8 @@ async def login_for_access_token(username, password):
     # create JWT
     token = create_access_token(
         data={
-            "person_id": str(user.id),
-            "person_level": str(user.level)
+            "sub": str(user.id),
+            "level": str(user.level)
         }
     )
 

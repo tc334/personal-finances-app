@@ -1,6 +1,6 @@
 import logging
 
-LEVEL = logging.INFO
+LEVEL = logging.DEBUG
 FORMAT = logging.Formatter(
     fmt=(
         "%(asctime)s.%(msecs)03d :: "

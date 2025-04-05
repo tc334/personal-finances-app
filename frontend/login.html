@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/queries.css" />
+
+    <title>Duck Club App</title>
+
+    <script type="text/javascript">
+      function moveOnMax(field, nextFieldID) {
+        if (field.value.length == 1) {
+          document.getElementById(nextFieldID).focus();
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="container" id="login-container">
+      <section class="eye-candy" id="section-candy">
+        <div id="top-row">
+          <div id="app-name">Welcome Home</div>
+          <img class="header-logo" src="img/Logo_lightGray.jpg" width="100%" />
+        </div>
+        <div class="frame">
+          <picture>
+            <source media="(min-width: 30em)" srcset="img/panoramic_hunt.jpg" />
+            <img src="img/panoramic_hunt_small.jpg" id="panorama" />
+          </picture>
+        </div>
+      </section>
+
+      <section id="section-action">
+        <article class="login-section">
+          <h1 class="heading-secondary">User Login</h1>
+          <form class="login-form" netlify>
+            <div>
+              <label for="inp-login-email">Email</label>
+              <input
+                id="inp-login-email"
+                type="email"
+                name="username"
+                required
+              />
+            </div>
+
+            <div>
+              <label for="inp-login-password">Password</label>
+              <input
+                id="inp-login-password"
+                type="password"
+                name="password"
+                required
+              />
+            </div>
+
+            <span class="button-holder login-buttons">
+              <button id="btn-login-submit" class="btn--form" type="submit">
+                Login
+              </button>
+              <input
+                id="inp-login-reset"
+                class="btn--form"
+                type="reset"
+                value="Clear"
+              />
+            </span>
+          </form>
+          <button id="btn-passwordreset">Forgot password?</button>
+          <div id="div-login-response" class="server-message"></div>
+        </article>
+      </section>
+    </main>
+  </body>
+  <script type="module" src="js/common_funcs.js"></script>
+  <script type="module" src="js/constants.js"></script>
+  <script type="module" src="js/login.js"></script>
+</html>

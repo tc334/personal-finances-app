@@ -1,19 +1,19 @@
 create type access_levels as enum('ADMIN', 'USER');
 create type storage_status as enum('AVAILABLE', 'DELETED', 'NEVER_EXISTED');
-create type account_type as enum('ASSET_LONGTERM', 'ASSET_SHORTTERM', 'ASSET_PREPAY', 'EXPENSE_OPERATING', 'INCOME', 'EQUITY', 'LIABILITY', 'RETAINED_EARNINGS', 'INCOME_SUMMARY');
-create type account_permanence as enum('PERMANENT', 'TEMPORARY');
+create type account_type as enum('ASSET', 'EXPENSE', 'INCOME', 'EQUITY', 'LIABILITY', 'DIVIDEND', 'INCOME_SUMMARY');
 create type account_actions as enum('DEBIT', 'CREDIT');
 
 create table person (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_on TIMESTAMP DEFAULT localtimestamp(),
   created_by VARCHAR(32) DEFAULT current_user(),
+  email TEXT NOT NULL,
   hashed_password CHAR(88),
-  active BOOLEAN DEFAULT TRUE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  level access_levels DEFAULT 'USER'
+  level access_levels DEFAULT 'USER',
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  confirmed BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 create table entity(
@@ -24,8 +24,10 @@ create table entity(
 );
 
 create table person_entity_junction(
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES person(id),
-  entity_id UUID REFERENCES entity(id)
+  entity_id UUID REFERENCES entity(id),
+  UNIQUE(user_id, entity_id)
 );
 
 create table account(
@@ -33,13 +35,13 @@ create table account(
   created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
   created_by VARCHAR(32) DEFAULT current_user(),
   entity_id UUID REFERENCES entity(id),
-  name TEXT NOT NULL,
+  name TEXT UNIQUE NOT NULL,
   parent_account_id UUID,
-  archived BOOLEAN DEFAULT 'FALSE',
   type account_type NOT NULL,
-  permanence account_permanence NOT NULL,
+  archived BOOLEAN DEFAULT 'FALSE',
   UNIQUE(id, type)
 );
+ALTER TABLE account ADD CONSTRAINT loop_back_fkey FOREIGN KEY(parent_account_id) REFERENCES account(id);
 
 create table journal(
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -48,6 +50,7 @@ create table journal(
   created_by UUID REFERENCES person(id),
   entity_id UUID REFERENCES entity(id),
   description TEXT NOT NULL,
+  closing_entry BOOLEAN DEFAULT FALSE,
   receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED'
  );
 
@@ -57,7 +60,7 @@ create table ledger(
   created_by VARCHAR(32) DEFAULT current_user(),
   journal_id UUID NOT NULL REFERENCES journal(id),
   account_id UUID NOT NULL REFERENCES account(id),
-  amount NUMERIC(2) NOT NULL,
+  amount NUMERIC(11,2) NOT NULL,
   direction account_actions NOT NULL,
   reconciled BOOLEAN NOT NULL DEFAULT 'FALSE'
 );
@@ -76,6 +79,6 @@ create table prepaid(
   expense_account_type account_type NOT NULL,
   FOREIGN KEY (asset_account_id, asset_account_type) REFERENCES account(id, type),
   FOREIGN KEY (expense_account_id, expense_account_type) REFERENCES account(id, type),
-  CHECK (asset_account_type = 'ASSET_PREPAY'),
-  CHECK (expense_account_type = 'EXPENSE_OPERATING')
+  CHECK (asset_account_type = 'ASSET'),
+  CHECK (expense_account_type = 'EXPENSE')
 );
