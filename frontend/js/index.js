@@ -5,6 +5,7 @@ import users from "./views/Settings/users.js";
 import entities from "./views/Settings/entities.js";
 import logout from "./views/Settings/u_logout.js";
 import me from "./views/Settings/u_me.js";
+import tree from "./views/Accounts/tree.js";
 
 // only do this once
 const jwt = localStorage.getItem("token");
@@ -43,6 +44,10 @@ const router = async () => {
     {
       path: "#entities",
       view: entities,
+    },
+    {
+      path: "#tree",
+      view: tree,
     },
   ];
 

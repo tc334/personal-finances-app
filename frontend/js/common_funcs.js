@@ -104,65 +104,54 @@ export function populate_aside_settings(user_level) {
     .addEventListener("click", menuSwitcher);
 }
 
-export function populate_aside_hunt(user_level) {
+export function populate_aside_accounts() {
   // start by clearing the aside
   removeAllChildNodes(document.getElementById("aside-content"));
 
   // data
-  const headings = ["member", "manager"];
+  const headings = [
+    "assets",
+    "expenses",
+    "liabilities",
+    "equity",
+    "income",
+    "dividends",
+  ];
 
   const icons = {
-    member: [
-      "img/people.png",
-      "img/suitcase.png",
-      "img/envelope.png",
-      "img/binoculars.png",
-    ],
-    manager: [
-      "img/plus.png",
-      "img/add_circle.png",
-      "img/subtraction.png",
-      "img/wrench.png",
-      "img/suitcase.png",
-    ],
+    assets: ["img/cog-wheel.png", "img/cog-wheel.png", "img/cog-wheel.png"],
+    expenses: ["img/cog-wheel.png", "img/cog-wheel.png"],
+    liabilities: ["img/cog-wheel.png"],
+    equity: ["img/cog-wheel.png"],
+    income: ["img/cog-wheel.png"],
+    dividends: ["img/cog-wheel.png"],
   };
 
   const text = {
-    member: ["groups", "guests", "invitations", "scouting report"],
-    manager: [
-      "scouting report",
-      "add hunter",
-      "remove hunter",
-      "adjust groups",
-      "guests",
-    ],
+    assets: ["long-term", "short-term", "owed"],
+    expenses: ["operating", "COGR"],
+    liabilities: ["liabilities"],
+    equity: ["equity"],
+    income: ["income"],
+    dividends: ["dividends"],
   };
 
   const links = {
-    member: ["#nav_hunt", "#u_guests", "#u_invitations", "#u_scouting"],
-    manager: [
-      "#m_scouting",
-      "#m_add",
-      "#m_remove",
-      "#m_groupings",
-      "#m_guests",
-    ],
+    assets: ["#tree", "#tree", "#tree"],
+    expenses: ["#tree", "#tree"],
+    liabilities: ["#tree"],
+    equity: ["#tree"],
+    income: ["#tree"],
+    dividends: ["#tree"],
   };
 
-  var idx_in = headings.indexOf(user_level);
-  if (idx_in == -1) {
-    idx_in = headings.length - 1;
-  }
-
   for (var i = 0; i < headings.length; i++) {
-    if (i <= idx_in) {
-      populateOneLevel(
-        headings[i],
-        text[headings[i]],
-        icons[headings[i]],
-        links[headings[i]]
-      );
-    }
+    populateOneLevel(
+      headings[i],
+      text[headings[i]],
+      icons[headings[i]],
+      links[headings[i]]
+    );
   }
 
   document.getElementById("main").classList.remove("menu-open");

@@ -69,7 +69,7 @@ class m_Account(BaseModel):
     entity_id: Optional[UUID] = None
     name: str
     parent_account_id: Optional[UUID] = None
-    type: m_AccountType
+    type: Optional[m_AccountType] = None
     archived: Optional[bool] = None
 
 

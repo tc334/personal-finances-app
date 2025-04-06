@@ -13,6 +13,7 @@ from app.database.psql_mgr.models.v1 import (
 )
 from app.database.psql_mgr.api.insert import INSERT_API
 from app.security.auth import get_password_hash
+from account_tree import tree as TREE
 
 
 async def add_users():
@@ -34,13 +35,13 @@ async def add_users():
 async def add_entities(admin_id):
     entity_id = await INSERT_API.insert_row_ret_uuid(
         m_Entity(
-            name="T & A",
+            name="1982 Counts",
         )
     )
 
     await INSERT_API.insert_row(
         m_Entity(
-            name="John & Jane Doe"
+            name="Dummy Entity"
         )
     )
 
@@ -111,11 +112,11 @@ async def add_master_accounts(entity_id):
         )
     )
 
-    income_summary = await INSERT_API.insert_row_ret_uuid(
+    income = await INSERT_API.insert_row_ret_uuid(
         m_Account(
             entity_id=entity_id,
-            name="Income Summary",
-            type=m_AccountType.INCOME_SUMMARY,
+            name="Income (Master)",
+            type=m_AccountType.INCOME,
         )
     )
 
@@ -127,75 +128,46 @@ async def add_master_accounts(entity_id):
         )
     )
 
+    income_summary = await INSERT_API.insert_row_ret_uuid(
+        m_Account(
+            entity_id=entity_id,
+            name="Income Summary",
+            type=m_AccountType.INCOME_SUMMARY,
+        )
+    )
+
     return {
-        "asset_long": a_long,
-        "asset_short": a_short,
-        "asset_owed": a_owed,
-        "expense_operating": ex_operating,
-        "expense_cogr": ex_cogr,
-        "liability": liability,
+        "assets_long": a_long,
+        "assets_short": a_short,
+        "assets_owed": a_owed,
+        "expenses_operating": ex_operating,
+        "expenses_cogr": ex_cogr,
+        "liabilities": liability,
         "equity": equity,
-        "dividend": dividend,
+        "income": income,
+        "dividends": dividend,
         "income_summary": income_summary,
     }
 
 
-async def add_accounts(master_dict, entity_id):
-    ex_vehicles = await INSERT_API.insert_row_ret_uuid(
+async def add_one_account(entity_id, parent_id, acct_dict):
+    account_id = await INSERT_API.insert_row_ret_uuid(
         m_Account(
             entity_id=entity_id,
-            name="Vehicles - Expense",
-            type=m_AccountType.EXPENSE,
-            parent_account_id=master_dict["expense_operating"],
+            name=acct_dict["name"],
+            parent_account_id=parent_id,
         )
     )
 
-    ex_snowy = await INSERT_API.insert_row_ret_uuid(
-        m_Account(
-            entity_id=entity_id,
-            name="Snowy",
-            type=m_AccountType.EXPENSE,
-            parent_account_id=ex_vehicles,
-        )
-    )
+    if "children" in acct_dict and len(acct_dict["children"]) > 0:
+        for child_acct in acct_dict["children"]:
+            await add_one_account(entity_id, account_id, child_acct)
 
-    ex_stormy = await INSERT_API.insert_row_ret_uuid(
-        m_Account(
-            entity_id=entity_id,
-            name="Stormy",
-            type=m_AccountType.EXPENSE,
-            parent_account_id=ex_vehicles,
-        )
-    )
 
-    a_bank = await INSERT_API.insert_row_ret_uuid(
-        m_Account(
-            entity_id=entity_id,
-            name="Wells Fargo",
-            type=m_AccountType.ASSET,
-            parent_account_id=master_dict["asset_short"],
-        )
-    )
-
-    a_vehicles = await INSERT_API.insert_row_ret_uuid(
-        m_Account(
-            entity_id=entity_id,
-            name="Vehicles",
-            type=m_AccountType.ASSET,
-            parent_account_id=master_dict["asset_long"],
-        )
-    )
-
-    eq_owners = await INSERT_API.insert_row_ret_uuid(
-        m_Account(
-            entity_id=entity_id,
-            name="Owners Equity",
-            type=m_AccountType.EQUITY,
-            parent_account_id=master_dict["equity"],
-        )
-    )
-
-    return a_bank, a_vehicles, eq_owners, ex_snowy
+async def add_accounts(entity_id, master_dict, tree):
+    for key in master_dict:
+        for acct in tree[key]:
+            await add_one_account(entity_id, master_dict[key], acct)
 
 
 async def add_journal(user_id, entity_id, a_bank, a_vehicles, eq_owners, ex_snowy):
@@ -297,5 +269,4 @@ async def populate_infra():
     admin_id = await add_users()
     entity_id = await add_entities(admin_id)
     master_accounts = await add_master_accounts(entity_id)
-    a_bank, a_vehicles, eq_owners, ex_snowy = await add_accounts(master_accounts, entity_id)
-    await add_journal(admin_id, entity_id, a_bank, a_vehicles, eq_owners, ex_snowy)
+    await add_accounts(entity_id, master_accounts, TREE)

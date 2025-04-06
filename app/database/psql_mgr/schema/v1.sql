@@ -37,7 +37,7 @@ create table account(
   entity_id UUID REFERENCES entity(id),
   name TEXT UNIQUE NOT NULL,
   parent_account_id UUID,
-  type account_type NOT NULL,
+  type account_type,
   archived BOOLEAN DEFAULT 'FALSE',
   UNIQUE(id, type)
 );

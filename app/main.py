@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.database.utils.service_mgr import start_services, stop_services
 from app.security.auth import login_for_access_token
-from app.routers import users, entities
+from app.routers import users, entities, accounts
 
 app = FastAPI()
 
@@ -22,6 +22,7 @@ app.add_middleware(
 
 app.include_router(users.router)
 app.include_router(entities.router)
+app.include_router(accounts.router)
 
 
 @app.post("/token")

@@ -6,8 +6,8 @@ from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
 from app.utils.env_mgr import get_env
-from app.database.psql_mgr.models.v1 import m_Person, c_Person
-from app.database.psql_mgr.api.fetch import FETCH_API
+from app.database.psql_mgr.models.v1 import m_Person, c_Person, m_Entity, c_Entity, m_PersonEntityJunction, c_PersonEntityJunction
+from app.database.psql_mgr.api.fetch import FETCH_API, NoRecordsFoundError
 
 
 ACCESS_TOKEN_EXPIRE_DAYS = 1
@@ -139,3 +139,20 @@ async def login_for_access_token(username, password):
         "access_token": token,
         "token_type": "bearer",
     }
+
+
+async def check_entity_permissions(user_id, entity_id):
+    try:
+        await FETCH_API.fetch_where_dict(
+            select_cols=c_PersonEntityJunction.id,
+            from_table=m_PersonEntityJunction,
+            where_dict={
+                c_PersonEntityJunction.entity_id: entity_id,
+                c_PersonEntityJunction.user_id: user_id,
+            }
+        )
+
+        # if you get here, it means something came back, which is pass
+        return True
+    except NoRecordsFoundError:
+        return False
