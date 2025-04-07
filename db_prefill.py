@@ -6,14 +6,17 @@ from app.database.psql_mgr.models.v1 import (
     m_Entity,
     m_PersonEntityJunction,
     m_Account,
+    c_Account,
     m_AccountType,
     m_Journal,
     m_Ledger,
     m_AccountActions,
 )
 from app.database.psql_mgr.api.insert import INSERT_API
+from app.database.psql_mgr.api.fetch import FETCH_API
 from app.security.auth import get_password_hash
 from account_tree import tree as TREE
+from sample_journal import journal as JOURNAL
 
 
 async def add_users():
@@ -151,11 +154,18 @@ async def add_master_accounts(entity_id):
 
 
 async def add_one_account(entity_id, parent_id, acct_dict):
+    parent_type = await FETCH_API.fetch_where_dict(
+        select_cols=c_Account.type,
+        from_table=m_Account,
+        where_dict={c_Account.id: parent_id},
+    )
+
     account_id = await INSERT_API.insert_row_ret_uuid(
         m_Account(
             entity_id=entity_id,
             name=acct_dict["name"],
             parent_account_id=parent_id,
+            type=parent_type,
         )
     )
 
@@ -170,99 +180,46 @@ async def add_accounts(entity_id, master_dict, tree):
             await add_one_account(entity_id, master_dict[key], acct)
 
 
-async def add_journal(user_id, entity_id, a_bank, a_vehicles, eq_owners, ex_snowy):
-    ########################################################
-    # Transaction 1
-    ########################################################
-    amount = 100000.0
-    journal_1 = await INSERT_API.insert_row_ret_uuid(
-        m_Journal(
-            entity_id=entity_id,
-            created_by=user_id,
-            description="Owners put money into business",
-            timestamp=date(year=2025, month=1, day=1),
+async def add_journal(user_id, entity_id, transaction_list):
+    for transaction in transaction_list:
+        credit_account_id = await FETCH_API.fetch_where_dict(
+            select_cols=c_Account.id,
+            from_table=m_Account,
+            where_dict={c_Account.name: transaction["credit"]}
         )
-    )
 
-    ledger_1_1 = await INSERT_API.insert_row_ret_uuid(
-        m_Ledger(
-            journal_id=journal_1,
-            account_id=a_bank,
-            amount=amount,
-            direction=m_AccountActions.DEBIT,
+        debit_account_id = await FETCH_API.fetch_where_dict(
+            select_cols=c_Account.id,
+            from_table=m_Account,
+            where_dict={c_Account.name: transaction["debit"]}
         )
-    )
 
-    ledger_1_2 = await INSERT_API.insert_row_ret_uuid(
-        m_Ledger(
-            journal_id=journal_1,
-            account_id=eq_owners,
-            amount=amount,
-            direction=m_AccountActions.CREDIT,
+        journal_id = await INSERT_API.insert_row_ret_uuid(
+            m_Journal(
+                description=transaction["description"],
+                timestamp=transaction["timestamp"],
+                entity_id=entity_id,
+                created_by=user_id,
+            )
         )
-    )
 
-    ########################################################
-    # Transaction 2
-    ########################################################
-    amount = 50000.0
-    journal_2 = await INSERT_API.insert_row_ret_uuid(
-        m_Journal(
-            entity_id=entity_id,
-            created_by=user_id,
-            description="Business buys a vehicle",
-            timestamp=date(year=2025, month=1, day=2),
+        await INSERT_API.insert_row(
+            m_Ledger(
+                journal_id=journal_id,
+                account_id=credit_account_id,
+                direction=m_AccountActions.CREDIT,
+                amount=transaction["amount"],
+            )
         )
-    )
 
-    await INSERT_API.insert_row_ret_uuid(
-        m_Ledger(
-            journal_id=journal_2,
-            account_id=a_bank,
-            amount=amount,
-            direction=m_AccountActions.CREDIT,
+        await INSERT_API.insert_row(
+            m_Ledger(
+                journal_id=journal_id,
+                account_id=debit_account_id,
+                direction=m_AccountActions.DEBIT,
+                amount=transaction["amount"]
+            )
         )
-    )
-
-    await INSERT_API.insert_row_ret_uuid(
-        m_Ledger(
-            journal_id=journal_2,
-            account_id=a_vehicles,
-            amount=amount,
-            direction=m_AccountActions.DEBIT,
-        )
-    )
-
-    ########################################################
-    # Transaction 3
-    ########################################################
-    amount = 5000.0
-    journal_3 = await INSERT_API.insert_row_ret_uuid(
-        m_Journal(
-            entity_id=entity_id,
-            created_by=user_id,
-            description="Vehicle depreciates",
-            timestamp=date(year=2025, month=1, day=3),
-        )
-    )
-
-    await INSERT_API.insert_row_ret_uuid(
-        m_Ledger(
-            journal_id=journal_3,
-            account_id=ex_snowy,
-            amount=amount,
-            direction=m_AccountActions.DEBIT,
-        )
-    )
-
-    await INSERT_API.insert_row_ret_uuid(
-        m_Ledger(
-            journal_id=journal_3,
-            account_id=a_vehicles,
-            amount=amount,
-            direction=m_AccountActions.CREDIT,
-        )
-    )
 
 
 async def populate_infra():
@@ -270,3 +227,4 @@ async def populate_infra():
     entity_id = await add_entities(admin_id)
     master_accounts = await add_master_accounts(entity_id)
     await add_accounts(entity_id, master_accounts, TREE)
+    await add_journal(admin_id, entity_id, JOURNAL)

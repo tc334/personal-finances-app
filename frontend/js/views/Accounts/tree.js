@@ -9,7 +9,7 @@ import {
 } from "../../common_funcs.js";
 
 var jwt_global;
-var db_data;
+var amounts;
 const subroute = "accounts";
 
 const css_levels = ["level-0", "level-1", "level-2"];
@@ -111,16 +111,28 @@ export default class extends AbstractView {
         "&" +
         new URLSearchParams(object).toString();
 
-      console.log("ROUTE:" + route);
-
       callAPI(
         jwt,
         route,
         "GET",
         null,
-        (response_full_json) => {
-          updateTitle(response_full_json["name"], response_full_json["amount"]);
-          populateTreeTable(response_full_json["children"]);
+        (account_tree_json) => {
+          // Now call second function to get amounts
+          const route2 =
+            base_uri + "/" + subroute + "/amounts?entity_id=" + current_entity;
+
+          callAPI(
+            jwt,
+            route2,
+            "GET",
+            null,
+            (amounts_json) => {
+              amounts = amounts_json;
+              updateTitle(account_tree_json["name"], -99);
+              populateTreeTable(account_tree_json["children"]);
+            },
+            displayMessageToUser
+          );
         },
         displayMessageToUser
       );
@@ -138,7 +150,11 @@ function oneRow(table, level, account) {
   tabCell.id = css_levels[level];
 
   var tabCell = tr.insertCell(-1);
-  tabCell.innerHTML = account["amount"];
+  if (account["id"] in amounts) {
+    tabCell.innerHTML = amounts[account["id"]];
+  } else {
+    tabCell.innerHTML = 0.0;
+  }
   tabCell.classList.add("right");
   tabCell.id = css_levels[level];
 
@@ -147,7 +163,7 @@ function oneRow(table, level, account) {
   }
 }
 
-function populateTreeTable(data) {
+function populateTreeTable(tree) {
   var table = document.getElementById("tree-table");
 
   // clear anything already in the table
@@ -156,8 +172,8 @@ function populateTreeTable(data) {
     table.deleteRow(i);
   }
 
-  for (var i = 0; i < data.length; i++) {
-    oneRow(table, 0, data[i]);
+  for (var i = 0; i < tree.length; i++) {
+    oneRow(table, 0, tree[i]);
   }
 }
 
