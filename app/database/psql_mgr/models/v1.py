@@ -79,6 +79,7 @@ class m_Journal(BaseModel):
     timestamp: date
     created_by: Optional[UUID] = None
     entity_id: Optional[UUID] = None
+    vendor: Optional[str] = None
     description: str
     closing_entry: Optional[bool] = None
     receipt_status: Optional[m_StorageStatus] = None
@@ -187,6 +188,7 @@ class c_Journal:
     timestamp = "journal.timestamp"
     created_by = "journal.created_by"
     entity_id = "journal.entity_id"
+    vendor = "journal.vendor"
     description = "journal.description"
     closing_entry = "journal.closing_entry"
     receipt_status = "journal.receipt_status"

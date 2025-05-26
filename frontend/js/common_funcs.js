@@ -162,32 +162,23 @@ export function populate_aside_accounts() {
 }
 
 // Populate the alternate aside for the stats menu
-export function populate_aside_stats() {
+export function populate_aside_journal() {
   // start by clearing the aside
   removeAllChildNodes(document.getElementById("aside-content"));
 
   // data
-  const headings = ["summary", "single"];
+  const headings = ["journal"];
 
   const icons = {
-    summary: [
-      "img/calendar.png",
-      "img/user.png",
-      "img/drop.png",
-      "img/bird.png",
-      "img/people.png",
-    ],
-    single: ["img/calendar.png"],
+    journal: ["img/add_circle.png", "img/easy.png", "img/paper.png"],
   };
 
   const text = {
-    summary: ["by date", "by hunter", "by pond", "by bird", "club"],
-    single: ["hunt history"],
+    journal: ["new entry", "simple expense entry", "view journal"],
   };
 
   const links = {
-    summary: ["#s_dates", "#s_hunters", "#s_ponds", "#s_birds", "#s_club"],
-    single: ["#s_hunt"],
+    journal: ["#j_new_entry", "#j_simple_expense_entry", "#nav_journal"],
   };
 
   const idx_in = 1;

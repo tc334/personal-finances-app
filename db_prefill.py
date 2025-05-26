@@ -182,20 +182,9 @@ async def add_accounts(entity_id, master_dict, tree):
 
 async def add_journal(user_id, entity_id, transaction_list):
     for transaction in transaction_list:
-        credit_account_id = await FETCH_API.fetch_where_dict(
-            select_cols=c_Account.id,
-            from_table=m_Account,
-            where_dict={c_Account.name: transaction["credit"]}
-        )
-
-        debit_account_id = await FETCH_API.fetch_where_dict(
-            select_cols=c_Account.id,
-            from_table=m_Account,
-            where_dict={c_Account.name: transaction["debit"]}
-        )
-
         journal_id = await INSERT_API.insert_row_ret_uuid(
             m_Journal(
+                vendor=transaction["vendor"] if "vendor" in transaction else None,
                 description=transaction["description"],
                 timestamp=transaction["timestamp"],
                 entity_id=entity_id,
@@ -203,23 +192,37 @@ async def add_journal(user_id, entity_id, transaction_list):
             )
         )
 
-        await INSERT_API.insert_row(
-            m_Ledger(
-                journal_id=journal_id,
-                account_id=credit_account_id,
-                direction=m_AccountActions.CREDIT,
-                amount=transaction["amount"],
+        for credit in transaction["credits"]:
+            credit_account_id = await FETCH_API.fetch_where_dict(
+                select_cols=c_Account.id,
+                from_table=m_Account,
+                where_dict={c_Account.name: credit["account"]}
             )
-        )
 
-        await INSERT_API.insert_row(
-            m_Ledger(
-                journal_id=journal_id,
-                account_id=debit_account_id,
-                direction=m_AccountActions.DEBIT,
-                amount=transaction["amount"]
+            await INSERT_API.insert_row(
+                m_Ledger(
+                    journal_id=journal_id,
+                    account_id=credit_account_id,
+                    direction=m_AccountActions.CREDIT,
+                    amount=credit["amount"],
+                )
             )
-        )
+
+        for debit in transaction["debits"]:
+            debit_account_id = await FETCH_API.fetch_where_dict(
+                select_cols=c_Account.id,
+                from_table=m_Account,
+                where_dict={c_Account.name: debit["account"]}
+            )
+
+            await INSERT_API.insert_row(
+                m_Ledger(
+                    journal_id=journal_id,
+                    account_id=debit_account_id,
+                    direction=m_AccountActions.DEBIT,
+                    amount=debit["amount"]
+                )
+            )
 
 
 async def populate_infra():

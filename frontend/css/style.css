@@ -977,6 +977,22 @@ Stats
   font-weight: 800;
 }
 
+.inner-table {
+  table-layout: fixed;
+  width: 25ch;
+  margin-bottom: 0px;
+  border: 1px;
+}
+
+.cell-fixed-width-2 {
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 800;
+  width: 11ch;
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: right;
+}
+
 .sort-helper {
   display: block;
   text-align: center;

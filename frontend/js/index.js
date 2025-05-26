@@ -6,6 +6,7 @@ import entities from "./views/Settings/entities.js";
 import logout from "./views/Settings/u_logout.js";
 import me from "./views/Settings/u_me.js";
 import tree from "./views/Accounts/tree.js";
+import view_journal from "./views/Journal/view_journal.js";
 
 // only do this once
 const jwt = localStorage.getItem("token");
@@ -49,6 +50,10 @@ const router = async () => {
       path: "#tree",
       view: tree,
     },
+    {
+      path: "#nav_journal",
+      view: view_journal,
+    },
   ];
 
   // Test each route for potential match
@@ -69,17 +74,7 @@ const router = async () => {
     };
   }
 
-  // for Hunts only, we have a branching view
-  if (match.route.path == "#nav_hunt") {
-    hunt_branch(jwt);
-  } else {
-    goto_route(new match.route.view(), jwt);
-  }
-
-  // This updates the view
-  //const view = new match.route.view();
-  //document.querySelector("#div-main").innerHTML = await view.getHtml();
-  //view.js(jwt);
+  goto_route(new match.route.view(), jwt);
 };
 
 // call to router for initial page load
@@ -89,43 +84,3 @@ router();
 window.addEventListener("hashchange", function (e) {
   router();
 });
-
-// this is a special test used for the "Hunt" screen to route
-// the page to either:
-// signup-open, signup-closed, draw-complete: pre-hunt
-// hunt-open: live-hunt
-// else: no-hunt
-function hunt_branch(jwt) {
-  const route = base_uri + "/hunts/active";
-  callAPI(
-    jwt,
-    route,
-    "GET",
-    null,
-    (response_full_json) => {
-      if (response_full_json["hunts"]) {
-        const hunts_dict = response_full_json["hunts"];
-        // logic
-        if (hunts_dict.length == 1) {
-          if (
-            hunts_dict[0]["status"] == "signup_open" ||
-            hunts_dict[0]["status"] == "signup_closed" ||
-            hunts_dict[0]["status"] == "draw_complete"
-          ) {
-            goto_route(new h_pre(), jwt);
-          } else if (hunts_dict[0]["status"] == "hunt_open") {
-            goto_route(new h_live(), jwt);
-          } else {
-            goto_route(new h_no(), jwt);
-          }
-        } else {
-          // this is an error condition. there should never be more than 1 hunt active
-          goto_route(new h_no(), jwt);
-        }
-      } else {
-        //console.log(data);
-      }
-    },
-    displayMessageToUser
-  );
-}

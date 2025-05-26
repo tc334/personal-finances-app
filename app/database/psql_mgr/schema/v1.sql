@@ -49,6 +49,7 @@ create table journal(
   timestamp DATE NOT NULL,
   created_by UUID REFERENCES person(id),
   entity_id UUID REFERENCES entity(id),
+  vendor TEXT,
   description TEXT NOT NULL,
   closing_entry BOOLEAN DEFAULT FALSE,
   receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED'
