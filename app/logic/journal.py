@@ -36,10 +36,13 @@ async def get_journal_entries(
 
     # Format the where_dict based on which constraints are specified by user
     where_dict = {c_Journal.entity_id: entity_id}
-    if start_date is not None:
-        where_dict[c_Journal.created_on] = (FETCH_API.where_operator.GREATER_THAN, start_date)
-    if stop_date is not None:
-        where_dict[c_Journal.created_on] = (FETCH_API.where_operator.LESS_THAN, stop_date)
+    if start_date is not None and stop_date is not None:
+        where_dict[c_Journal.timestamp] = (FETCH_API.where_operator.BETWEEN, (start_date, stop_date))
+    elif start_date is not None:
+        where_dict[c_Journal.timestamp] = (FETCH_API.where_operator.GREATER_THAN, start_date)
+    elif stop_date is not None:
+        where_dict[c_Journal.timestamp] = (FETCH_API.where_operator.LESS_THAN, stop_date)
+
     if account_name is not None:
         where_dict[c_Account.name] = account_name
 
@@ -65,6 +68,7 @@ async def get_journal_entries(
                 (c_Journal.created_by, c_Person.id),
             ],
             where_dict=where_dict,
+            order_by=[(c_Journal.timestamp, FETCH_API.order.DESC)],
             limit=limit,
         )
         if len(results) == arbitrary_max:
@@ -77,7 +81,7 @@ async def get_journal_entries(
             item[c_Person.first_name] + " " + item[c_Person.last_name],
             item[c_Journal.vendor],
             item[c_Journal.description]
-        ) for item in results])), key=(lambda x: x[1]))
+        ) for item in results])), key=(lambda x: x[1]), reverse=True)
 
         list_out = []
         for journal in results_journal_only:

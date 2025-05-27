@@ -929,6 +929,7 @@ Stats
 }
 
 .filter-list,
+.filter-account,
 .master_type_key {
   list-style: none;
   font-size: 1.8rem;

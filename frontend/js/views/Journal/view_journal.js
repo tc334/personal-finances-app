@@ -23,40 +23,40 @@ export default class extends AbstractView {
     <form id="form-filter">
       <div class="filter-container">
         <section class="filter-date">
-          <ul class="filter-list">
-            <li>
-              <input type="radio" name="filter-date" id="radio-current-season" value="current-season" checked>
-              <label for="radio-current-season">current season</label>
-            </li>
-            <li>
-              <input type="radio" name="filter-date" id="radio-all-records" value="all-records">
-              <label for="radio-all-records">all records</label>
-            </li>
-            <li>
-              <input type="radio" name="filter-date" id="radio-custom-date" value="custom-range">
-              <label for="radio-custom-date">custom date range:</label>
-            </li>
-          </ul>
           <div class="custom-date">
-            <input type="date" class="inp-date-filter" value="2022-03-01" name="date-start" id="date-start">
+            <input type="checkbox" name="chk-filter-date" id="chk-filter-date">
+            <label for="filter-date">Transaction Dates</label>
+          </div>
+          <div class="custom-date">
+            <input type="date" class="inp-date-filter" value="2025-01-01" name="date-start" id="date-start">
             <label for="date-start">start</label>
           </div>
           <div class="custom-date">
-            <input type="date" class="inp-date-filter" value="2023-03-01" name="date-end" id="date-end">
+            <input type="date" class="inp-date-filter" value="2030-01-01" name="date-end" id="date-end">
             <label for="date-end">end</label>
           </div>
         </section>
-        <section class="filter-member">
+        <section class="filter-max-ret-val">
           <ul class="filter-list">
             <li>
-              <input type="radio" name="filter-member" id="radio-whole-club" value="whole-club" checked>
-              <label for="radio-whole-club">whole club</label>
+              <input type="radio" name="filter-max-ret-val" id="radio-max-1000" value="1000" checked>
+              <label for="radio-max-1000">Max 1000</label>
             </li>
             <li>
-              <input type="radio" name="filter-member" id="radio-just-me" value="just-me">
-              <label for="radio-just-me">just me</label>
+              <input type="radio" name="filter-max-ret-val" id="radio-max-100" value="100">
+              <label for="radio-just-me">Max 100</label>
+            </li>
+            <li>
+              <input type="radio" name="filter-max-ret-val" id="radio-max-10" value="10">
+              <label for="radio-just-me">Max 10</label>
             </li>
           </ul>
+        </section>
+        <section class="filter-account">
+          <label for="select-account">Specific Account</label>
+          <select id="select-account" name="account_id" style="margin-top:0.5em">
+            <option value=-1>--select account--</option>
+          </select>
         </section>
       </div>  
       <button class="btn--form btn--cntr" id="btn-filter-refresh">Apply</button>
@@ -87,21 +87,7 @@ export default class extends AbstractView {
     populate_aside_journal();
     const current_entity = localStorage.getItem("current_entity");
 
-    // API route for this stats page
-    const route2 = base_uri + "/" + subroute + "/?entity_id=" + current_entity;
-
-    callAPI(
-      jwt,
-      route2,
-      "GET",
-      null,
-      (data) => {
-        console.log("ALPHA");
-        console.log(data);
-        populateTable(data["journal_entries"]);
-      },
-      displayMessageToUser
-    );
+    populateAccountList(jwt, current_entity);
 
     // What do do on a submit
     const myForm = document.getElementById("form-filter");
@@ -115,11 +101,30 @@ export default class extends AbstractView {
       formData.forEach((value, key) => (object[key] = value));
 
       // API route for this stats page
-      const route =
-        base_uri +
-        "/journal/get" +
-        "?" +
-        new URLSearchParams(object).toString();
+      var query_str = "entity_id=" + current_entity;
+
+      // Append account query, if an account is selected
+      const select_accounts = document.getElementById("select-account");
+      if (select_accounts.value != -1) {
+        query_str += "&account_name=" + select_accounts.value;
+      }
+
+      // Check which return value count limit radio button is selected
+      var ele = document.getElementsByName("filter-max-ret-val");
+      for (var i = 0; i < ele.length; i++) {
+        if (ele[i].checked) query_str += "&max_rows=" + ele[i].value;
+      }
+
+      // Add date constraints, if selected
+      const chk_custom_date = document.getElementById("chk-filter-date");
+      if (chk_custom_date.checked == true) {
+        const start_date = document.getElementById("date-start");
+        query_str += "&start_date=" + start_date.value;
+        const stop_date = document.getElementById("date-end");
+        query_str += "&stop_date=" + stop_date.value;
+      }
+
+      const route = base_uri + "/" + subroute + "/?" + query_str;
 
       callAPI(
         jwt,
@@ -127,8 +132,7 @@ export default class extends AbstractView {
         "GET",
         null,
         (data) => {
-          //console.log(data["stats"]);
-          populateTable(data["stats"]);
+          populateTable(data["journal_entries"]);
         },
         displayMessageToUser
       );
@@ -174,5 +178,35 @@ function populateTable(db_data) {
 
     var tabCell = tr.insertCell(-1);
     tabCell.innerHTML = nestedTable(db_data[i]["credits"]);
+  }
+}
+
+function populateAccountList(jwt, current_entity) {
+  // API route for this stats page
+  const route =
+    base_uri + "/accounts/list_of_names?entity_id=" + current_entity;
+
+  callAPI(
+    jwt,
+    route,
+    "GET",
+    null,
+    (data) => {
+      populateAccountList_aux(data["account_names"]);
+    },
+    displayMessageToUser
+  );
+}
+
+function populateAccountList_aux(db_data) {
+  // sort alphabetically
+  db_data.sort(function (left, right) {
+    return left > right ? 1 : -1;
+  });
+  const select_accounts = document.getElementById("select-account");
+  for (var i = 0; i < db_data.length; i++) {
+    var new_opt = document.createElement("option");
+    new_opt.innerHTML = db_data[i];
+    select_accounts.appendChild(new_opt);
   }
 }

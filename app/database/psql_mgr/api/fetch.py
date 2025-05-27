@@ -116,6 +116,8 @@ def compose_all_where_possibilities(where_dict: dict[str, tuple[str, Any]]) -> l
             FETCH_API.where_operator.EQUAL,
             FETCH_API.where_operator.GREATER_THAN,
             FETCH_API.where_operator.LESS_THAN,
+            FETCH_API.where_operator.GREATER_THAN_OR_EQUAL_TO,
+            FETCH_API.where_operator.LESS_THAN_OR_EQUAL_TO,
         ]:
             where_list.append(
                 Composed(
@@ -420,7 +422,9 @@ class FETCH_API:
     class where_operator:
         EQUAL = "="
         GREATER_THAN = ">"
+        GREATER_THAN_OR_EQUAL_TO = ">="
         LESS_THAN = "<"
+        LESS_THAN_OR_EQUAL_TO = "<="
         IN = "IN"
         BETWEEN = "BETWEEN"
 
