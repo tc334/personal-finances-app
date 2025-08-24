@@ -184,7 +184,7 @@ function populateTable(db_data) {
 function populateAccountList(jwt, current_entity) {
   // API route for this stats page
   const route =
-    base_uri + "/accounts/list_of_names?entity_id=" + current_entity;
+    base_uri + "/accounts/list_of_accounts?entity_id=" + current_entity;
 
   callAPI(
     jwt,
@@ -192,7 +192,7 @@ function populateAccountList(jwt, current_entity) {
     "GET",
     null,
     (data) => {
-      populateAccountList_aux(data["account_names"]);
+      populateAccountList_aux(data["accounts"]);
     },
     displayMessageToUser
   );
@@ -206,7 +206,7 @@ function populateAccountList_aux(db_data) {
   const select_accounts = document.getElementById("select-account");
   for (var i = 0; i < db_data.length; i++) {
     var new_opt = document.createElement("option");
-    new_opt.innerHTML = db_data[i];
+    new_opt.innerHTML = db_data[i]["account.name"];
     select_accounts.appendChild(new_opt);
   }
 }

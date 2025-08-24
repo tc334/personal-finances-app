@@ -189,6 +189,7 @@ async def add_journal(user_id, entity_id, transaction_list):
                 timestamp=transaction["timestamp"],
                 entity_id=entity_id,
                 created_by=user_id,
+                valid=True,
             )
         )
 

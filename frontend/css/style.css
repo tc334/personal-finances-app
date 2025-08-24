@@ -244,6 +244,7 @@ main {
   text-align: center;
   margin-bottom: 1.2rem;
   line-height: 1.2;
+  text-transform: capitalize;
 }
 
 .heading-tertiary {
@@ -1300,4 +1301,101 @@ Stats
   font-weight: 300;
   padding-left: 8rem;
   background-color: #fff;
+}
+
+.journal-entry-column {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-right: 1px solid #2f2504;
+}
+
+.journal-entry-column:last-child {
+  border: none;
+}
+
+.journal-entry-data-heading-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-left: 5px;
+  margin-right: 3em;
+}
+
+#form-journal-entry {
+  max-width: fit-content;
+}
+
+.journal-entry-data-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 5px;
+  gap: 10px;
+  align-items: center;
+}
+
+.journal-entry-amount {
+  max-width: 12ch;
+  text-align: right;
+}
+
+.journal-entry-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.journal-entry-add-button {
+  width: max-content;
+  padding: 2px;
+  align-self: end;
+  margin: 2px;
+}
+
+.journal-entry-subtotal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin: 2px;
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+.journal-entry-main {
+  display: flex;
+  justify-content: center;
+}
+
+#form-journal-entry {
+  display: flex;
+  align-self: center;
+  flex-direction: column;
+  gap: 2em;
+  margin-top: 2em;
+}
+
+.journal-entry-subheading {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  line-height: 1.2;
+  text-transform: capitalize;
+  border-bottom: 1px solid #2f2504;
+}
+
+.journal-entry-meta {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+}
+
+.heading-tertiary-no-bottom-margin {
+  font-size: 2rem;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.journal-entry-meta label {
+  text-align: right;
 }

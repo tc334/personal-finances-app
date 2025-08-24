@@ -125,13 +125,13 @@ async def get_all_account_amounts(entity_id: UUID) -> dict[str, float]:
     return d
 
 
-async def get_list_from_entity(entity_id: UUID) -> list[str]:
+async def get_list_from_entity(entity_id: UUID) -> list[dict]:
     try:
         results = await FETCH_API.fetch_where_dict(
-            select_cols=c_Account.name,
+            select_cols=[c_Account.id, c_Account.name],
             from_table=m_Account,
             where_dict={c_Account.entity_id: entity_id},
-            flatten_return=True,
+            order_by=(c_Account.name, FETCH_API.order.ASC),
         )
         return results
 

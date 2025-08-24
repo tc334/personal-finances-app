@@ -142,7 +142,6 @@ export default class extends AbstractView {
 
 function oneRow(table, level, account) {
   var tr = table.insertRow(-1);
-  console.log(css_levels[level]);
 
   var tabCell = tr.insertCell(-1);
   tabCell.innerHTML = account["name"];

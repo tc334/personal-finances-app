@@ -52,14 +52,15 @@ create table journal(
   vendor TEXT,
   description TEXT NOT NULL,
   closing_entry BOOLEAN DEFAULT FALSE,
-  receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED'
+  receipt_status storage_status NOT NULL DEFAULT 'NEVER_EXISTED',
+  valid BOOLEAN NOT NULL DEFAULT FALSE
  );
 
 create table ledger(
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
   created_by VARCHAR(32) DEFAULT current_user(),
-  journal_id UUID NOT NULL REFERENCES journal(id),
+  journal_id UUID REFERENCES journal(id),
   account_id UUID NOT NULL REFERENCES account(id),
   amount NUMERIC(11,2) NOT NULL,
   direction account_actions NOT NULL,

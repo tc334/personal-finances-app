@@ -6,7 +6,8 @@ import entities from "./views/Settings/entities.js";
 import logout from "./views/Settings/u_logout.js";
 import me from "./views/Settings/u_me.js";
 import tree from "./views/Accounts/tree.js";
-import view_journal from "./views/Journal/view_journal.js";
+import journal_view from "./views/Journal/journal_view.js";
+import journal_new from "./views/Journal/journal_new.js";
 
 // only do this once
 const jwt = localStorage.getItem("token");
@@ -52,7 +53,11 @@ const router = async () => {
     },
     {
       path: "#nav_journal",
-      view: view_journal,
+      view: journal_view,
+    },
+    {
+      path: "#nav_journal_new",
+      view: journal_new,
     },
   ];
 

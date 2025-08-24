@@ -178,7 +178,7 @@ export function populate_aside_journal() {
   };
 
   const links = {
-    journal: ["#j_new_entry", "#j_simple_expense_entry", "#nav_journal"],
+    journal: ["#nav_journal_new", "#j_simple_expense_entry", "#nav_journal"],
   };
 
   const idx_in = 1;
@@ -425,4 +425,29 @@ export function selectAll(e) {
   var input = e.currentTarget;
   var len_of_val = input.value.length;
   input.setSelectionRange(0, len_of_val);
+}
+
+export function currency_blur(e) {
+  this.value = currency_formatter(this.value);
+}
+
+export function currency_formatter(clean) {
+  let value = parseFloat(clean);
+  if (!isNaN(value)) {
+    return value.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+    });
+  } else {
+    return clean;
+  }
+}
+
+export function currency_focus(e) {
+  this.value = currency_cleaner(this.value);
+}
+
+export function currency_cleaner(dirty) {
+  let value = dirty.replace(/[^0-9.-]+/g, ""); // Remove non-numeric characters
+  return parseFloat(value) || ""; // Convert back to number or clear if invalid
 }

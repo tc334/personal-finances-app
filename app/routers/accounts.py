@@ -71,8 +71,8 @@ async def accounts_get_tree(
         )
 
 
-@router.get("/list_of_names")
-async def accounts_get_names(
+@router.get("/list_of_accounts")
+async def accounts_get_list(
         current_user: ANNOTATED_USER,
         entity_id: UUID
 ) -> dict:
@@ -86,8 +86,8 @@ async def accounts_get_names(
 
     try:
         # good opportunity for Redis
-        list_of_names = await get_list_from_entity(entity_id)
-        return {"account_names": list_of_names}
+        list_of_accounts = await get_list_from_entity(entity_id)
+        return {"accounts": list_of_accounts}
 
     except BusinessLogicException as e:
         raise HTTPException(

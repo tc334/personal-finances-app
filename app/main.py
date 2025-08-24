@@ -44,7 +44,6 @@ async def shutdown_event():
 
 @app.exception_handler(ResponseValidationError)
 async def validation_exception_handler(request, exc):
-    print(f"ALPHA:{exc.errors()}")
     return JSONResponse(
         status_code=400,
         content={"message": "Response validation error", "details": exc.errors()},

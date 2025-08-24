@@ -24,6 +24,14 @@ class CUSTOM_API:
             return records
 
     @staticmethod
+    async def generic_query_no_return(query: str):
+        async with (
+            get_async_pool().connection() as conn,
+            conn.cursor(row_factory=dict_row) as cur,
+        ):
+            await cur.execute(query)
+
+    @staticmethod
     async def delete_row(table: BaseModel, row_id: UUID | str):
         async with (
             get_async_pool().connection() as conn,

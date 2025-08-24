@@ -83,13 +83,14 @@ class m_Journal(BaseModel):
     description: str
     closing_entry: Optional[bool] = None
     receipt_status: Optional[m_StorageStatus] = None
+    valid: Optional[bool] = None
 
 
 class m_Ledger(BaseModel):
     id: Optional[UUID] = None
     created_on: Optional[datetime] = None
     created_by: Optional[str] = None
-    journal_id: UUID
+    journal_id: Optional[UUID] = None
     account_id: UUID
     amount: float
     direction: m_AccountActions
@@ -192,6 +193,7 @@ class c_Journal:
     description = "journal.description"
     closing_entry = "journal.closing_entry"
     receipt_status = "journal.receipt_status"
+    valid = "journal.valid"
 
 
 @dataclass(frozen=True)

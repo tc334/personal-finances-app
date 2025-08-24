@@ -39,7 +39,6 @@ async def verify_token(token: str) -> m_Person:
         payload_dict = jwt.decode(token, env.SECRET_KEY, algorithms=[ALGORITHM])
         logger.debug(payload_dict)
     except jwt.ExpiredSignatureError:
-        print(f"Expired Token")
         logger.warning(f"User rejected due to expired JWT")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -61,7 +60,6 @@ async def verify_token(token: str) -> m_Person:
             from_table=m_Person,
             where_uuid=payload_dict["sub"],
         )
-        print(user)
     except:
         logger.warning(f"No user found matching token with uuid {payload_dict['sub']}")
         raise HTTPException(
