@@ -112,18 +112,17 @@ export default class extends AbstractView {
       e.preventDefault();
 
       // Check for ledger balance
-      /*
       const debitSum = document.getElementById("journal-entry-subtotal-debit");
       const creditSum = document.getElementById(
         "journal-entry-subtotal-credit"
       );
       if (
-        currency_cleaner(debitSum.value) != currency_cleaner(creditSum.value)
+        currency_cleaner(debitSum.innerHTML) !=
+        currency_cleaner(creditSum.innerHTML)
       ) {
         alert("Debit and credit balances don't match.");
         return;
       }
-      */
 
       // Pull data from form and put it into the json format the DB wants
       var post_data = {};
@@ -139,7 +138,6 @@ export default class extends AbstractView {
         gather_accounts("credit")
       );
 
-      console.log(post_data);
       var json = JSON.stringify(post_data);
 
       const route = base_uri + "/" + subroute + "/";
