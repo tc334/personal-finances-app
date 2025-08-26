@@ -6,10 +6,10 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.database.psql_mgr.models.v1 import m_Person
+from app.database.psql_mgr.models.v1 import m_Person, m_AccountType
 from ..dependencies import get_current_active_user
 from app.security.auth import check_entity_permissions
-from app.logic.accounts import get_tree_from_master, BusinessLogicException, get_all_account_amounts, get_list_from_entity
+from app.logic.accounts import get_tree_from_master, BusinessLogicException, get_all_account_amounts, get_list_from_entity, get_list_from_entity_and_type, get_list_from_master
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +36,34 @@ async def accounts_get_tree(
         )
 
     try:
-        tree = await get_tree_from_master(master_type_key)
+        tree = await get_tree_from_master(master_type_key, entity_id)
         return tree
+
+    except BusinessLogicException as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.get("/master_list")
+async def accounts_get_list(
+        current_user: ANNOTATED_USER,
+        master_type_key: str,
+        entity_id: UUID,
+        b_only_childless: bool | None = False,
+) -> dict:
+
+    # First, make sure this user is allowed to access this entity
+    if not await check_entity_permissions(current_user.id, entity_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This user is not allowed to access this entity",
+        )
+
+    try:
+        my_list = await get_list_from_master(master_type_key, entity_id, b_only_childless)
+        return {"accounts": my_list}
 
     except BusinessLogicException as e:
         raise HTTPException(
@@ -74,7 +100,8 @@ async def accounts_get_tree(
 @router.get("/list_of_accounts")
 async def accounts_get_list(
         current_user: ANNOTATED_USER,
-        entity_id: UUID
+        entity_id: UUID,
+        account_type: m_AccountType | None = None,
 ) -> dict:
 
     # First, make sure this user is allowed to access this entity
@@ -85,8 +112,11 @@ async def accounts_get_list(
         )
 
     try:
-        # good opportunity for Redis
-        list_of_accounts = await get_list_from_entity(entity_id)
+        if account_type is None:
+            # good opportunity for Redis
+            list_of_accounts = await get_list_from_entity(entity_id)
+        else:
+            list_of_accounts = await get_list_from_entity_and_type(entity_id, account_type)
         return {"accounts": list_of_accounts}
 
     except BusinessLogicException as e:

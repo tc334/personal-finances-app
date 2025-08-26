@@ -35,11 +35,12 @@ create table account(
   created_on TIMESTAMP DEFAULT localtimestamp() NOT NULL,
   created_by VARCHAR(32) DEFAULT current_user(),
   entity_id UUID REFERENCES entity(id),
-  name TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
   parent_account_id UUID,
   type account_type,
   archived BOOLEAN DEFAULT 'FALSE',
-  UNIQUE(id, type)
+  UNIQUE(id, type),
+  UNIQUE(entity_id, name)
 );
 ALTER TABLE account ADD CONSTRAINT loop_back_fkey FOREIGN KEY(parent_account_id) REFERENCES account(id);
 

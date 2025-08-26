@@ -327,17 +327,19 @@ tree = {
         }
     ],
     "expenses_cogr": [],
-    "liabilities": [
+    "liabilities_short": [
+        {
+            "name": "Citi Credit Card",
+            "children": [],
+        },
+    ],
+    "liabilities_long": [
         {
             "name": "Home Loan 511 Oak Brook",
             "children": [],
         },
         {
             "name": "Amplify Credit Union",
-            "children": [],
-        },
-        {
-            "name": "Citi Credit Card",
             "children": [],
         },
     ],

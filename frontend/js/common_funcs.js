@@ -178,7 +178,7 @@ export function populate_aside_journal() {
   };
 
   const links = {
-    journal: ["#nav_journal_new", "#j_simple_expense_entry", "#nav_journal"],
+    journal: ["#nav_journal_new", "#nav_journal_simple", "#nav_journal"],
   };
 
   const idx_in = 1;

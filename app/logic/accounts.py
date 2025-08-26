@@ -1,15 +1,7 @@
-import json
 from uuid import UUID
 
 from app.database.psql_mgr.api.fetch import FETCH_API, NoRecordsFoundError
 from app.database.psql_mgr.models.v1 import (
-    m_Person,
-    m_AccessLevels,
-    c_Person,
-    m_Entity,
-    c_Entity,
-    m_PersonEntityJunction,
-    c_PersonEntityJunction,
     m_Account,
     c_Account,
     m_Ledger,
@@ -27,7 +19,8 @@ master_account_names = {
     "EXPENSE_COGR": "COGR Expenses (Master)",
     "EQUITY": "Equity (Master)",
     "INCOME": "Income (Master)",
-    "LIABILITY": "Liabilities (Master)",
+    "LIABILITY_LONG": "Long Term Liabilities (Master)",
+    "LIABILITY_SHORT": "Short Term Liabilities (Master)",
     "DIVIDENDS": "Dividends (Master)"
 }
 
@@ -54,7 +47,7 @@ def sign_scalar(account_type: str, transaction_direction: str) -> float:
         raise BusinessLogicException("unrecognized account type")
 
 
-async def get_tree_from_master(master_type_key: str):
+async def get_tree_from_master(master_type_key: str, entity_id: UUID):
     if master_type_key not in master_account_names:
         raise BusinessLogicException("Invalid master type key")
 
@@ -64,6 +57,7 @@ async def get_tree_from_master(master_type_key: str):
             from_table=m_Account,
             where_dict={
                 c_Account.name: master_account_names[master_type_key],
+                c_Account.entity_id: entity_id,
             },
         )
         tree = await get_tree_from_account(results[c_Account.id], results[c_Account.entity_id])
@@ -137,3 +131,60 @@ async def get_list_from_entity(entity_id: UUID) -> list[dict]:
 
     except NoRecordsFoundError:
         raise BusinessLogicException(f"No accounts found matching entity id {entity_id}")
+
+
+async def get_list_from_entity_and_type(entity_id: UUID, account_type: m_AccountType) -> list[dict]:
+    try:
+        results = await FETCH_API.fetch_where_dict(
+            select_cols=[c_Account.id, c_Account.name],
+            from_table=m_Account,
+            where_dict={
+                c_Account.entity_id: entity_id,
+                c_Account.type: account_type,
+            },
+            order_by=(c_Account.name, FETCH_API.order.ASC),
+        )
+        return results
+
+    except NoRecordsFoundError:
+        raise BusinessLogicException(f"No accounts found matching entity id {entity_id}")
+
+
+def list_recursion(current_account, account_list, b_only_childless):
+    me = {
+        c_Account.name: current_account[c_Account.name],
+        c_Account.id: str(current_account[c_Account.id]),
+    }
+    children_indices = [idx for (idx, account) in enumerate(account_list) if account[c_Account.parent_account_id] == current_account[c_Account.id]]
+    if b_only_childless:
+        if not children_indices:
+            return [me]
+        else:
+            my_list = []
+    else:
+        my_list = [me]
+    for child_idx in children_indices:
+        my_list += list_recursion(account_list[child_idx], account_list, b_only_childless)
+    return my_list
+
+
+async def get_list_from_master(master_type_key: str, entity_id: UUID, b_only_childless: bool):
+    try:
+        # all accounts associated with this entity
+        account_list = await FETCH_API.fetch_where_dict(
+            select_cols=[c_Account.id, c_Account.name, c_Account.parent_account_id],
+            from_table=m_Account,
+            where_dict={c_Account.entity_id: entity_id},
+            order_by=[(c_Account.name, FETCH_API.order.ASC)],
+        )
+    except NoRecordsFoundError:
+        raise BusinessLogicException("No accounts found associated with your entity")
+
+    head_account = next((account for account in account_list if account[c_Account.name] == master_account_names[master_type_key]), None)
+    if head_account is None:
+        raise BusinessLogicException("Could not find the account to make tree for")
+
+    my_list = list_recursion(head_account, account_list, b_only_childless)
+    return my_list
+
+

@@ -8,6 +8,7 @@ import me from "./views/Settings/u_me.js";
 import tree from "./views/Accounts/tree.js";
 import journal_view from "./views/Journal/journal_view.js";
 import journal_new from "./views/Journal/journal_new.js";
+import journal_simple from "./views/Journal/journal_simple.js";
 
 // only do this once
 const jwt = localStorage.getItem("token");
@@ -58,6 +59,10 @@ const router = async () => {
     {
       path: "#nav_journal_new",
       view: journal_new,
+    },
+    {
+      path: "#nav_journal_simple",
+      view: journal_simple,
     },
   ];
 

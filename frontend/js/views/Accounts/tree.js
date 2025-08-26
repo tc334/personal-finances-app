@@ -54,8 +54,12 @@ export default class extends AbstractView {
               <label for="radio-equity">Equity</label>
             </li>
             <li>
-              <input type="radio" name="master_type_key" id="radio-liability" value="LIABILITY">
-              <label for="radio-liability">Liability</label>
+              <input type="radio" name="master_type_key" id="radio-liability-short" value="LIABILITY_SHORT">
+              <label for="radio-liability-short">Liability, Short Term</label>
+            </li>
+            <li>
+              <input type="radio" name="master_type_key" id="radio-liability-long" value="LIABILITY_LONG">
+              <label for="radio-liability-long">Liability, Long Term</label>
             </li>
             <li>
               <input type="radio" name="master_type_key" id="radio-income" value="INCOME">

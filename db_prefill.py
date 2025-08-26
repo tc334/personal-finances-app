@@ -107,10 +107,18 @@ async def add_master_accounts(entity_id):
         )
     )
 
-    liability = await INSERT_API.insert_row_ret_uuid(
+    l_short = await INSERT_API.insert_row_ret_uuid(
         m_Account(
             entity_id=entity_id,
-            name="Liabilities (Master)",
+            name="Short Term Liabilities (Master)",
+            type=m_AccountType.EQUITY,
+        )
+    )
+
+    l_long = await INSERT_API.insert_row_ret_uuid(
+        m_Account(
+            entity_id=entity_id,
+            name="Long Term Liabilities (Master)",
             type=m_AccountType.EQUITY,
         )
     )
@@ -145,7 +153,8 @@ async def add_master_accounts(entity_id):
         "assets_owed": a_owed,
         "expenses_operating": ex_operating,
         "expenses_cogr": ex_cogr,
-        "liabilities": liability,
+        "liabilities_short": l_short,
+        "liabilities_long": l_long,
         "equity": equity,
         "income": income,
         "dividends": dividend,
